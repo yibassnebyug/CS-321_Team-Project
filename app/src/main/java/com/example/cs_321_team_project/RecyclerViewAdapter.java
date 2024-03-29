@@ -35,8 +35,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String media = mData.get(position);
-        holder.myTextView.setText(media);
+        String[] media = mData.get(position).split("/");
+        holder.displayName.setText(media[0]);
+        holder.displayGenre.setText(media[1]);
+        holder.displayStatus.setText(media[2]);
     }
 
     public void clear() {
@@ -54,11 +56,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView myTextView;
+        TextView displayName;
+        TextView displayGenre;
+        TextView displayStatus;
 
         ViewHolder(View itemView) {
             super(itemView);
-            myTextView = itemView.findViewById(R.id.pieceOfMedia);
+            displayName = itemView.findViewById(R.id.displayName);
+            displayGenre = itemView.findViewById(R.id.displayGenre);
+            displayStatus = itemView.findViewById(R.id.displayStatus);
             itemView.setOnClickListener(this);
         }
 

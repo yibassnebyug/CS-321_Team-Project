@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private void refreshItems(String genre, String name) {
         //adapter.clear();
         //ArrayList<ArrayList<String>> list = storage.fromJSON();
-        list.add(insertIndex, "genre: " + genre + " : name: " + name);
+        list.add(insertIndex, name + "/" + genre + "/Ongoing");
         adapter.setItem(list);
         adapter.notifyItemInserted(insertIndex);
         insertIndex++;
