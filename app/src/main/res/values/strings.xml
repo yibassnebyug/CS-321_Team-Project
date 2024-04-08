@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CS-321_Team-Project</string>
+    <string name="add_item_button">add item button</string>
+    <string name="name">Name</string>
+    <string name="genre">Genre</string>
+    <string name="status">Status</string>
 </resources>

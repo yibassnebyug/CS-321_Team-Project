@@ -9,13 +9,14 @@
     tools:context=".MainActivity">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:contentDescription="add item button"
+        android:contentDescription="@string/add_item_button"
         android:id="@+id/floatingActionButton3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:clickable="true"
+        android:focusable="true"
         app:backgroundTint="#7F7F7F"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -42,7 +43,8 @@
                 android:layout_marginVertical="5dp"
                 android:layout_weight="0.33"
                 android:clickable="true"
-                android:text="Name"
+                android:focusable="true"
+                android:text="@string/name"
                 android:textAlignment="center"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -56,7 +58,8 @@
                 android:layout_marginVertical="5dp"
                 android:layout_weight="0.33"
                 android:clickable="true"
-                android:text="Genre"
+                android:focusable="true"
+                android:text="@string/genre"
                 android:textAlignment="center"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -70,7 +73,8 @@
                 android:layout_marginVertical="5dp"
                 android:layout_weight="0.33"
                 android:clickable="true"
-                android:text="Status"
+                android:focusable="true"
+                android:text="@string/status"
                 android:textAlignment="center"
                 android:textSize="19sp"
                 android:textStyle="bold" />
