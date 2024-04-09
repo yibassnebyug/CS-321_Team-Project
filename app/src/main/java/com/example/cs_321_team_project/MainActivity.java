@@ -19,6 +19,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+// to get app resources
+import android.content.res.Resources;
+
+// debugging
+import android.util.Log;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> list = new ArrayList<String>();
     RecyclerViewAdapter adapter;
     RecyclerView recyclerView;
+
+    final int UNSORTED = 0;
+    final int SORTED_ASCENDING = 1;
+    final int SORTED_DESCENDING = 2;
+    int nameSortState = UNSORTED, genreSortState = UNSORTED, statusSortState = UNSORTED;
     int insertIndex = 0;
 
     @Override
@@ -54,9 +68,10 @@ public class MainActivity extends AppCompatActivity {
                 //startActivity(new Intent(v.getContext(), AddActivity.class));
                 Intent addIntent = new Intent(v.getContext(), AddActivity.class);
                 startActivityForResult.launch(addIntent);
+
+                Log.d("onClick event", "View id " + v.getId());
             }
         });
-
     }
 
     ActivityResultLauncher<Intent> startActivityForResult = registerForActivityResult(
@@ -80,5 +95,34 @@ public class MainActivity extends AppCompatActivity {
         adapter.setItem(list);
         adapter.notifyItemInserted(insertIndex);
         insertIndex++;
+    }
+
+    public void onClickTextView(View view) {
+        Log.d("MainActivity", "onClickTextView");
+
+        int viewId = view.getId();
+//        TextView textView = findViewById(viewId);
+
+        if (viewId == R.id.nameTitle) {
+            Log.d("MainActivity", "onClickTextView: nameTitle");
+            if (nameSortState == UNSORTED || nameSortState == SORTED_DESCENDING) {
+                Collections.sort(list);
+                nameSortState = SORTED_ASCENDING;
+                Log.d("MainActivity", "onClickTextView: sorted ascending");
+            }
+            else if (nameSortState == SORTED_ASCENDING) {
+                Collections.sort(list, Collections.reverseOrder());
+                nameSortState = SORTED_DESCENDING;
+                Log.d("MainActivity", "onClickTextView: sorted descending");
+            }
+
+        }
+
+        adapter.setItem(list);
+        adapter.notifyDataSetChanged();
+        Log.d("MainActivity", "onClickTextView: adapter notified");
+
+
+
     }
 }
