@@ -115,8 +115,19 @@ public class MainActivity extends AppCompatActivity {
                 nameSortState = SORTED_DESCENDING;
                 Log.d("MainActivity", "onClickTextView: sorted descending");
             }
+            genreSortState = UNSORTED;
+            statusSortState = UNSORTED;
 
         }
+
+//        #TODO DERRICK
+//        if (viewId == R.id.genreTitle) {
+//            Log.d("MainActivity", "onClickTextView: genreTitle");
+//        }
+//
+//        if (viewId == R.id.statusTitle) {
+//            Log.d("MainActivity", "onClickTextView: statusTitle");
+//        }
 
         adapter.setItem(list);
         adapter.notifyDataSetChanged();
