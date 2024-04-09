@@ -101,18 +101,20 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "onClickTextView");
 
         int viewId = view.getId();
-//        TextView textView = findViewById(viewId);
+        TextView textView = findViewById(viewId);
 
         if (viewId == R.id.nameTitle) {
             Log.d("MainActivity", "onClickTextView: nameTitle");
             if (nameSortState == UNSORTED || nameSortState == SORTED_DESCENDING) {
                 Collections.sort(list);
                 nameSortState = SORTED_ASCENDING;
+                textView.setText(R.string.nameAscending);
                 Log.d("MainActivity", "onClickTextView: sorted ascending");
             }
             else if (nameSortState == SORTED_ASCENDING) {
                 Collections.sort(list, Collections.reverseOrder());
                 nameSortState = SORTED_DESCENDING;
+                textView.setText(R.string.nameDescending);
                 Log.d("MainActivity", "onClickTextView: sorted descending");
             }
             genreSortState = UNSORTED;
@@ -132,8 +134,6 @@ public class MainActivity extends AppCompatActivity {
         adapter.setItem(list);
         adapter.notifyDataSetChanged();
         Log.d("MainActivity", "onClickTextView: adapter notified");
-
-
 
     }
 }
