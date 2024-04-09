@@ -5,5 +5,9 @@
     <string name="nameAscending">Name ↑</string>
     <string name="nameDescending">Name ↓</string>
     <string name="genre">Genre</string>
+    <string name="genreAscending">Genre ↑</string>
+    <string name="genreDescending">Genre ↓</string>
     <string name="status">Status</string>
+    <string name="statusAscending">Status ↑</string>
+    <string name="statusDescending">Status ↓</string>
 </resources>
