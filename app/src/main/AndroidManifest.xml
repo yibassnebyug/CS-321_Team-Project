@@ -13,14 +13,19 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".AddActivity"
-            android:label="Add Activity"
+            android:name=".EditActivity"
             android:exported="false"
+            android:label="Edit Activity"
             android:parentActivityName=".MainActivity"/>
         <activity
+            android:name=".AddActivity"
+            android:exported="false"
+            android:label="Add Activity"
+            android:parentActivityName=".MainActivity" />
+        <activity
             android:name=".MainActivity"
-            android:label="Main Activity"
-            android:exported="true">
+            android:exported="true"
+            android:label="Main Activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,4 +33,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

@@ -1,8 +1,12 @@
 package com.example.cs_321_team_project;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -11,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,16 +31,18 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    MediaList storage = new MediaList();
-    ArrayList<String> list = new ArrayList<String>();
+    static MediaList storage = new MediaList();
+    static ArrayList<String> list = new ArrayList<String>();
+    static ArrayList<String> sortedList = new ArrayList<String>();
     RecyclerViewAdapter adapter;
-    RecyclerView recyclerView;
+    static RecyclerView recyclerView;
+    static int insertIndex = 0;
+    static AlertDialog alert1;
 
     final int UNSORTED = 0;
     final int SORTED_ASCENDING = 1;
     final int SORTED_DESCENDING = 2;
     int nameSortState = UNSORTED, genreSortState = UNSORTED, statusSortState = UNSORTED;
-    int insertIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,44 +59,64 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rvMedia);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RecyclerViewAdapter(this, list);
+        adapter = new RecyclerViewAdapter(this, sortedList);
         recyclerView.setAdapter(adapter);
 
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("test");
+        builder1.setCancelable(true);
+        alert1 = builder1.create();
 
         FloatingActionButton button = findViewById(R.id.floatingActionButton3);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(v.getContext(), AddActivity.class));
                 Intent addIntent = new Intent(v.getContext(), AddActivity.class);
-                startActivityForResult.launch(addIntent);
-
-                Log.d("onClick event", "View id " + v.getId());
+                startActivityForResult(addIntent, 2); // ignore the depreciation prompt, it works
             }
         });
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == 2) { // when adding stuff
+            String genre = data.getStringExtra("genre");
+            String status = data.getStringExtra("status");
+            String name = data.getStringExtra("name");
+            storage.toJSON(genre, name, status);
 
-    ActivityResultLauncher<Intent> startActivityForResult = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if(result.getResultCode() == AppCompatActivity.RESULT_OK) {
-                    Intent data = result.getData();
-                    assert data != null;
-                    String genre = data.getStringExtra("genre");
-                    String name = data.getStringExtra("name");
-                    storage.toJSON(genre, name);
-                    refreshItems(genre, name);
-                }
-            }
-    );
+            list.add(insertIndex, name + "/" + genre + "/" + status);
+            sortedList.add(""); // used to make sortedList and list have same number of indexes
 
-    private void refreshItems(String genre, String name) {
-        //adapter.clear();
-        //ArrayList<ArrayList<String>> list = storage.fromJSON();
-        list.add(insertIndex, name + "/" + genre + "/Ongoing");
-        adapter.setItem(list);
-        adapter.notifyItemInserted(insertIndex);
-        insertIndex++;
+            insertIndex++;
+
+            refreshItems();
+        } else if (resultCode == 3) { // when editing stuff
+            String newGenre = data.getStringExtra("genre");
+            String newStatus = data.getStringExtra("status");
+            String newName = data.getStringExtra("name");
+
+            String oldGenre = data.getStringExtra("oldGenre");
+            String oldStatus = data.getStringExtra("oldStatus");
+            String oldName = data.getStringExtra("oldName");
+
+            String listFormat = oldName + "/" + oldGenre + "/" + oldStatus;
+            int position = list.indexOf(listFormat);
+
+            list.set(position, newName + "/" + newGenre + "/" + newStatus);
+
+            refreshItems();
+        }
+    }
+
+    private void refreshItems() {
+        Collections.copy(sortedList, list);
+        adapter.setItem(sortedList);
+        nameSortState = UNSORTED;
+        genreSortState = UNSORTED;
+        statusSortState = UNSORTED;
+        refreshTitles();
+        adapter.notifyDataSetChanged();
     }
 
     /**
@@ -145,20 +172,27 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "onClickNameTitle");
 
         Log.d("MainActivity", "onClickNameTitle: nameTitle");
-        if (nameSortState == UNSORTED || nameSortState == SORTED_DESCENDING) {
-            Collections.sort(list);
+        if (nameSortState == UNSORTED) {
+            Collections.sort(sortedList);
             nameSortState = SORTED_ASCENDING;
             Log.d("MainActivity", "onClickNameTitle: sorted ascending");
         }
         else if (nameSortState == SORTED_ASCENDING) {
-            Collections.sort(list, Collections.reverseOrder());
+            Collections.sort(sortedList, Collections.reverseOrder());
             nameSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickNameTitle: sorted descending");
         }
+        else if(nameSortState == SORTED_DESCENDING) {
+            Collections.copy(sortedList, list);
+            //sortedList = list;
+            nameSortState = UNSORTED;
+            Log.d("MainActivity", "onClickNameTitle: unsorted");
+        }
+
         genreSortState = UNSORTED;
         statusSortState = UNSORTED;
 
-        adapter.setItem(list);
+        adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
         Log.d("MainActivity", "onClickNameTitle: adapter notified");
         refreshTitles();
@@ -170,8 +204,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "onClickGenreTitle");
 
         Log.d("MainActivity", "onClickGenreTitle: nameTitle");
-        if (genreSortState == UNSORTED || genreSortState == SORTED_DESCENDING) {
-            Collections.sort(list, new Comparator<String>() {
+        if (genreSortState == UNSORTED) {
+            Collections.sort(sortedList, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -183,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MainActivity", "onClickGenreTitle: sorted ascending");
         }
         else if (genreSortState == SORTED_ASCENDING) {
-            Collections.sort(list, new Comparator<String>() {
+            Collections.sort(sortedList, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -194,10 +228,17 @@ public class MainActivity extends AppCompatActivity {
             genreSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickGenreTitle: sorted descending");
         }
+        else if(genreSortState == SORTED_DESCENDING) {
+            Collections.copy(sortedList, list);
+            //sortedList = list;
+            genreSortState = UNSORTED;
+            Log.d("MainActivity", "onClickGenreTitle: unsorted");
+        }
+
         nameSortState = UNSORTED;
         statusSortState = UNSORTED;
 
-        adapter.setItem(list);
+        adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
         Log.d("MainActivity", "onClickGenreTitle: adapter notified");
         refreshTitles();
@@ -208,34 +249,41 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "onClickStatusTitle");
 
         Log.d("MainActivity", "onClickStatusTitle: nameTitle");
-        if (statusSortState == UNSORTED || statusSortState == SORTED_DESCENDING) {
-            Collections.sort(list, new Comparator<String>() {
+        if (statusSortState == UNSORTED) {
+            Collections.sort(sortedList, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
                     String[] split2 = o2.split("/");
-                    return split1[1].compareTo(split2[1]);
+                    return split1[2].compareTo(split2[2]);
                 }
             });
             statusSortState = SORTED_ASCENDING;
             Log.d("MainActivity", "onClickStatusTitle: sorted ascending");
         }
         else if (statusSortState == SORTED_ASCENDING) {
-            Collections.sort(list, new Comparator<String>() {
+            Collections.sort(sortedList, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
                     String[] split2 = o2.split("/");
-                    return split2[1].compareTo(split1[1]);
+                    return split2[2].compareTo(split1[2]);
                 }
             });
             statusSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickStatusTitle: sorted descending");
         }
+        else if(statusSortState == SORTED_DESCENDING) {
+            Collections.copy(sortedList, list);
+            //sortedList = list;
+            statusSortState = UNSORTED;
+            Log.d("MainActivity", "onClickStatusTitle: unsorted");
+        }
+
         nameSortState = UNSORTED;
         genreSortState = UNSORTED;
 
-        adapter.setItem(list);
+        adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
         Log.d("MainActivity", "onClickStatusTitle: adapter notified");
         refreshTitles();

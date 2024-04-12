@@ -1,27 +1,37 @@
 package com.example.cs_321_team_project;
 
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
-    private List<String> mData;
-    private LayoutInflater mInflater;
-    private ItemClickListener mClickListener;
+    private static List<String> mData;
+    private static LayoutInflater mInflater;
+    private static ItemClickListener mClickListener;
+    private Context mContext;
 
     // data is passed into the constructor
     RecyclerViewAdapter(Context context, List<String> data) {
-        this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
+        mInflater = LayoutInflater.from(context);
+        mData = data;
+        mContext = context;
     }
 
     // inflates the row layout from xml when needed
@@ -39,6 +49,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.displayName.setText(media[0]);
         holder.displayGenre.setText(media[1]);
         holder.displayStatus.setText(media[2]);
+
+        //setClickListener(mClickListener);
     }
 
     public void clear() {
@@ -69,8 +81,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
 
         @Override
-        public void onClick(View view) {
-            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+        public void onClick(View v) {
+            Intent editIntent = new Intent(v.getContext(), EditActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("genre", displayGenre.getText().toString());
+            bundle.putString("status", displayStatus.getText().toString());
+            bundle.putString("name", displayName.getText().toString());
+            editIntent.putExtras(bundle);
+            ((Activity) mContext).startActivityForResult(editIntent, 3);
         }
     }
 
@@ -80,12 +98,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public void setItem(List<String> array) {
-        this.mData = array;
+        mData = new ArrayList<String>(array);
     }
 
     // allows clicks events to be caught
     void setClickListener(ItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
+        mClickListener = itemClickListener;
     }
 
     // parent activity will implement this method to respond to click events

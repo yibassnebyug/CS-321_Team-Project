@@ -8,19 +8,19 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class MediaList {
-    private JSONObject jsonObject = new JSONObject();
-    private ArrayList<String> keys = new ArrayList<String>();
+    private static JSONObject jsonObject = new JSONObject();
+    private static ArrayList<String> keys = new ArrayList<String>();
 
     // Constructor
     public MediaList() {
         //jsonObject  = new JSONObject();
     }
-    public MediaList(String genre, String name) {
+    /*public MediaList(String genre, String name) {
         toJSON(genre, name);
-    }
+    }*/
 
     public MediaList(String genre, String name, String status) {
-        // to be implemented
+        toJSON(genre, name , status);
     }
 
     // Getters and setters
@@ -32,7 +32,7 @@ public class MediaList {
         this.name = name;
     }*/
 
-    public void toJSON(String genre, String name) {
+    public void toJSON(String genre, String name, String status) {
         if(jsonObject.has(genre)) { // if genre exists
             JSONArray jsonArray;
 
@@ -56,7 +56,7 @@ public class MediaList {
 
             try {
                 newMedia.put("name", name);
-                newMedia.put("status", "-");
+                newMedia.put("status", status);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -67,7 +67,7 @@ public class MediaList {
 
             try {
                 newMedia.put("name", name);
-                newMedia.put("status", "-");
+                newMedia.put("status", status);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -99,6 +99,10 @@ public class MediaList {
         }
 
         return list;
+    }
+
+    public void editJSON() {
+        // to be implemented
     }
 
     public void clear() {
