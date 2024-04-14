@@ -30,7 +30,7 @@ public class EditActivity extends AppCompatActivity {
         });
 
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-        builder1.setMessage("Parameters haven't changed.");
+        builder1.setMessage("Error... Please check parameters...");
         builder1.setCancelable(true);
         AlertDialog alert1 = builder1.create();
 

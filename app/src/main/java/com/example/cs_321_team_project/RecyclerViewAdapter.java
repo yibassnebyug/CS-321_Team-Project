@@ -24,8 +24,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private static List<String> mData;
     private static LayoutInflater mInflater;
-    private static ItemClickListener mClickListener;
-    private Context mContext;
+    private final Context mContext;
 
     // data is passed into the constructor
     RecyclerViewAdapter(Context context, List<String> data) {
@@ -49,8 +48,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.displayName.setText(media[0]);
         holder.displayGenre.setText(media[1]);
         holder.displayStatus.setText(media[2]);
-
-        //setClickListener(mClickListener);
     }
 
     public void clear() {
@@ -67,7 +64,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 
     // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         TextView displayName;
         TextView displayGenre;
         TextView displayStatus;
@@ -78,6 +75,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             displayGenre = itemView.findViewById(R.id.displayGenre);
             displayStatus = itemView.findViewById(R.id.displayStatus);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
+            /*itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+
+                    return false;
+                }
+            });*/
         }
 
         @Override
@@ -90,24 +95,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             editIntent.putExtras(bundle);
             ((Activity) mContext).startActivityForResult(editIntent, 3);
         }
-    }
 
-    // convenience method for getting data at click position
-    String getItem(int id) {
-        return mData.get(id);
+        @Override
+        public boolean onLongClick(View v) {
+            return ((MainActivity)mContext).deleteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString());
+        }
     }
 
     public void setItem(List<String> array) {
         mData = new ArrayList<String>(array);
-    }
-
-    // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
-        mClickListener = itemClickListener;
-    }
-
-    // parent activity will implement this method to respond to click events
-    public interface ItemClickListener {
-        void onItemClick(View view, int position);
     }
 }

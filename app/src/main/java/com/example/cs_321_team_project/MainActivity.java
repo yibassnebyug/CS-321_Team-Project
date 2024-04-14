@@ -3,19 +3,19 @@ package com.example.cs_321_team_project;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +27,6 @@ import java.util.Comparator;
 
 // debugging
 import android.util.Log;
-import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerViewAdapter adapter;
     static RecyclerView recyclerView;
     static int insertIndex = 0;
-    static AlertDialog alert1;
+    static AlertDialog alert;
+    static boolean freshStart = true;
 
     final int UNSORTED = 0;
     final int SORTED_ASCENDING = 1;
@@ -55,17 +55,27 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        //list.add("-empty-");
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_mainActivity);
+        setSupportActionBar(toolbar);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rvMedia);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecyclerViewAdapter(this, sortedList);
         recyclerView.setAdapter(adapter);
 
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-        builder1.setMessage("test");
-        builder1.setCancelable(true);
-        alert1 = builder1.create();
+        if(freshStart) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            TextView message = new TextView(this);
+            message.setText("Welcome to MyCollection!\nManage your favorite topics!\nTap the ? for help.");
+            message.setGravity(Gravity.CENTER_HORIZONTAL);
+            message.setTextSize(18);
+            builder.setView(message);
+
+            alert = builder.create();
+            alert.show();
+            freshStart = !freshStart;
+        }
 
         FloatingActionButton button = findViewById(R.id.floatingActionButton3);
         button.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +86,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.help) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            TextView message = new TextView(this);
+            message.setText("Tap the plus button to add a new topic.\n\n Tap the column labels to sort your items.\n\nTap an item to edit its information.\n\nLong press on an item to delete it.");
+            message.setGravity(Gravity.CENTER_HORIZONTAL);
+            message.setTextSize(18);
+            builder.setView(message);
+            alert = builder.create();
+            alert.show();
+        }
+        else if (item.getItemId() == R.id.search)
+        {
+            // add search function here
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -83,14 +119,29 @@ public class MainActivity extends AppCompatActivity {
             String genre = data.getStringExtra("genre");
             String status = data.getStringExtra("status");
             String name = data.getStringExtra("name");
-            storage.toJSON(genre, name, status);
 
-            list.add(insertIndex, name + "/" + genre + "/" + status);
-            sortedList.add(""); // used to make sortedList and list have same number of indexes
+            String formattedItem = name + "/" + genre + "/" + status;
 
-            insertIndex++;
+            if(list.contains(formattedItem)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                TextView message = new TextView(this);
+                message.setText("Could not add item.\nItem already exists.");
+                message.setGravity(Gravity.CENTER_HORIZONTAL);
+                message.setTextSize(18);
+                builder.setView(message);
+                alert = builder.create();
+                alert.show();
+            }
+            else {
+                storage.toJSON(genre, name, status);
 
-            refreshItems();
+                list.add(insertIndex, formattedItem);
+                sortedList.add(""); // used to make sortedList and list have same number of indexes
+
+                insertIndex++;
+
+                refreshItems();
+            }
         } else if (resultCode == 3) { // when editing stuff
             String newGenre = data.getStringExtra("genre");
             String newStatus = data.getStringExtra("status");
@@ -100,13 +151,34 @@ public class MainActivity extends AppCompatActivity {
             String oldStatus = data.getStringExtra("oldStatus");
             String oldName = data.getStringExtra("oldName");
 
-            String listFormat = oldName + "/" + oldGenre + "/" + oldStatus;
-            int position = list.indexOf(listFormat);
+            String formattedItem = oldName + "/" + oldGenre + "/" + oldStatus;
 
-            list.set(position, newName + "/" + newGenre + "/" + newStatus);
-
-            refreshItems();
+            if(list.contains(formattedItem)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                TextView message = new TextView(this);
+                message.setText("Could not update item.\nItem already exists.");
+                message.setGravity(Gravity.CENTER_HORIZONTAL);
+                message.setTextSize(18);
+                builder.setView(message);
+                alert = builder.create();
+                alert.show();
+            }
+            else {
+                int position = list.indexOf(formattedItem);
+                list.set(position, newName + "/" + newGenre + "/" + newStatus);
+                refreshItems();
+            }
         }
+    }
+
+    public boolean deleteItem(String genre, String name, String status) {
+        String formattedItem = name + "/" + genre + "/" + status;
+        list.remove(formattedItem);
+        sortedList.remove(formattedItem);
+        adapter.setItem(sortedList);
+        adapter.notifyDataSetChanged();
+        insertIndex--;
+        return true;
     }
 
     private void refreshItems() {
