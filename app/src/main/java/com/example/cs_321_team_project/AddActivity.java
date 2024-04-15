@@ -29,7 +29,7 @@ public class AddActivity extends AppCompatActivity {
         });
 
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-        builder1.setMessage("Error... Please check parameters...");
+        builder1.setMessage("Please check parameters...");
         builder1.setCancelable(true);
         AlertDialog alert1 = builder1.create();
 

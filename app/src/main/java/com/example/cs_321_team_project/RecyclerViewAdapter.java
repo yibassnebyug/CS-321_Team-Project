@@ -45,6 +45,34 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.displayName.setText(media[0]);
         holder.displayGenre.setText(media[1]);
         holder.displayStatus.setText(media[2]);
+        holder.favoriteButton.setTag(media[3]);
+
+        String favorite = String.valueOf(holder.favoriteButton.getTag());
+
+        if(favorite.equals("false"))
+            holder.favoriteButton.setImageResource(R.drawable.unfilled_star);
+        else if(favorite.equals("true"))
+            holder.favoriteButton.setImageResource(R.drawable.filled_star);
+
+        holder.favoriteButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                //String favorite = String.valueOf(holder.favoriteButton.getTag());
+
+                if(favorite.equals("false")) {
+                    holder.favoriteButton.setImageResource(R.drawable.filled_star);
+                    holder.favoriteButton.setTag("true");
+                    ((MainActivity)mContext).favoriteItem(holder.displayGenre.getText().toString(), holder.displayName.getText().toString(), holder.displayStatus.getText().toString(), "false");
+
+                }
+                else if(favorite.equals("true")) {
+                    holder.favoriteButton.setImageResource(R.drawable.unfilled_star);
+                    holder.favoriteButton.setTag("false");
+                    ((MainActivity)mContext).unfavoriteItem(holder.displayGenre.getText().toString(), holder.displayName.getText().toString(), holder.displayStatus.getText().toString(), "true");
+
+                }
+            }
+        });
     }
 
     public void clear() {
@@ -75,33 +103,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             favoriteButton = itemView.findViewById(R.id.favoriteItem);
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
-            favoriteButton.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view){
-                    String favorite = String.valueOf(favoriteButton.getTag());
-
-                    if(favorite.equals("false")){
-                        favoriteButton.setImageResource(R.drawable.filled_star);
-                        favoriteButton.setTag("true");
-                        ((MainActivity)mContext).favoriteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString(), favoriteButton.getTag().toString());
-
-                    }
-                    else if(favorite.equals("true")){
-                        favoriteButton.setImageResource(R.drawable.unfilled_star);
-                        favoriteButton.setTag("false");
-                        ((MainActivity)mContext).unfavoriteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString(), favoriteButton.getTag().toString());
-                    }
-
-                }
-            });
-
-            /*itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-
-                    return false;
-                }
-            });*/
+            //favoriteButton.setImageResource(R.drawable.unfilled_star);
         }
 
         @Override
@@ -118,7 +120,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         @Override
         public boolean onLongClick(View v) {
-            return ((MainActivity)mContext).deleteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString());
+            return ((MainActivity)mContext).deleteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString(), favoriteButton.getTag().toString());
         }
     }
 

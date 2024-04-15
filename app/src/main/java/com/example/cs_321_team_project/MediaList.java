@@ -1,108 +1,95 @@
 package com.example.cs_321_team_project;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.os.Environment;
+import android.view.Gravity;
+import android.widget.TextView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.io.File;
 
 public class MediaList {
     private static JSONObject jsonObject = new JSONObject();
-    private static ArrayList<String> keys = new ArrayList<String>();
+    private final Context context;
 
     // Constructor
-    public MediaList() {
-        //jsonObject  = new JSONObject();
-    }
-    /*public MediaList(String genre, String name) {
-        toJSON(genre, name);
-    }*/
+    public MediaList(Context m){ context = m; }
 
-    public MediaList(String genre, String name, String status) {
-        toJSON(genre, name , status);
-    }
-
-    // Getters and setters
-    /*public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }*/
-
-    public void toJSON(String genre, String name, String status) {
-        if(jsonObject.has(genre)) { // if genre exists
-            JSONArray jsonArray;
-
-            try {
-                jsonArray = jsonObject.getJSONArray(genre);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+    public void toJSON(ArrayList<String> list) {
+        try {
+            JSONArray array = new JSONArray();
+            for(String s : list) {
+                String[] splitString = s.split("/");
+                JSONObject object = new JSONObject();
+                object.put("name", splitString[0]);
+                object.put("genre", splitString[1]);
+                object.put("status", splitString[2]);
+                array.put(object);
             }
-
-            // checks if inputted media is found under the genre
-            for(int i = 0; i < jsonArray.length(); i++) {
-                try {
-                    JSONObject o = jsonArray.getJSONObject(i);
-                    if(o.getString("name").equals(name)) { return; }
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            JSONObject newMedia = new JSONObject(); // creates a jsonObject for the new media
-
-            try {
-                newMedia.put("name", name);
-                newMedia.put("status", status);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            jsonArray.put(newMedia);
-        }
-        else if(jsonObject.isNull(genre)) { // if genre does not exist
-            JSONObject newMedia = new JSONObject(); // creates a jsonObject for the new media
-
-            try {
-                newMedia.put("name", name);
-                newMedia.put("status", status);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            JSONArray jsonArray = new JSONArray(); // creates a jsonArray to store media
-            jsonArray.put(newMedia); // adds new media into the jsonArray
-
-            try {
-                jsonObject.put(genre, jsonArray); // links the array of media to a specific genre
-                keys.add(genre);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
+            jsonObject.put("object", array);
+            toFile();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public ArrayList<ArrayList<String>> fromJSON() {
-        //JSONArray jsonArray = jsonObject.getJSONArray(genre);
-        //return jsonObject;
-        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+    public ArrayList<String> fromJSON() {
+        try {
+            fromFile();
+            ArrayList<String> list = new ArrayList<String>();
+            JSONArray array = jsonObject.getJSONArray("object");
 
-        for(String s : keys) {
-            JSONArray array = jsonObject.optJSONArray(s);
-            ArrayList<String> temp = new ArrayList<String>();
             for(int i = 0; i < array.length(); i++) {
-                temp.add(array.optString(i));
+                JSONObject object = array.getJSONObject(i);
+                String name = object.getString("name");
+                String genre = object.getString("genre");
+                String status = object.getString("status");
+                String formattedString = name + "/" + genre + "/" + status;
+                list.add(formattedString);
             }
-            list.add(temp);
-        }
 
-        return list;
+            return list;
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void editJSON() {
-        // to be implemented
+    public void toFile() {
+        try{
+            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File file = new File(path + "/storage.json");
+            ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(file));
+            output.writeObject(jsonObject);
+            output.close();
+        } catch (Exception e) {
+            // something
+        }
+    }
+
+    public void fromFile() {
+        try {
+            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File file = new File(path + "/storage.json");
+            ObjectInputStream input = new ObjectInputStream(new FileInputStream(file));
+            jsonObject = (JSONObject) input.readObject();
+            input.close();
+        } catch (Exception e) {
+
+        }
     }
 
     public void clear() {

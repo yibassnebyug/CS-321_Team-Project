@@ -2,12 +2,14 @@ package com.example.cs_321_team_project;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -24,23 +26,21 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 // debugging
 import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
-    static MediaList storage = new MediaList();
+    MediaList storage = new MediaList(this);
     static ArrayList<String> list = new ArrayList<String>();
     static ArrayList<String> sortedList = new ArrayList<String>();
     RecyclerViewAdapter adapter;
     static RecyclerView recyclerView;
-    static int insertIndex = 0;
+    static int favoriteCount = 0;
     static AlertDialog alert;
     static boolean freshStart = true;
-    private Map<String, Boolean> favoriteStatus = new HashMap<>();
+
     final int UNSORTED = 0;
     final int SORTED_ASCENDING = 1;
     final int SORTED_DESCENDING = 2;
@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -62,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_mainActivity);
         setSupportActionBar(toolbar);
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rvMedia);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.mediaList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecyclerViewAdapter(this, sortedList);
         recyclerView.setAdapter(adapter);
@@ -137,12 +135,10 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
             else {
-                storage.toJSON(genre, name, status);
+                storage.toJSON(list);
 
-                list.add(insertIndex, formattedItem);
-                sortedList.add(""); // used to make sortedList and list have same number of indexes
-
-                insertIndex++;
+                list.add(formattedItem);
+                sortedList.add(formattedItem); // used to make sortedList and list have same number of indexes
 
                 refreshItems();
             }
@@ -154,10 +150,13 @@ public class MainActivity extends AppCompatActivity {
             String oldGenre = data.getStringExtra("oldGenre");
             String oldStatus = data.getStringExtra("oldStatus");
             String oldName = data.getStringExtra("oldName");
-            String favorite = data.getStringExtra("favorite");
-            String formattedItem = oldName + "/" + oldGenre + "/" + oldStatus +"/" + favorite;
 
-            if(list.contains(formattedItem)) {
+            String favorite = data.getStringExtra("favorite");
+
+            String oldItem = oldName + "/" + oldGenre + "/" + oldStatus;
+            String newItem = newName + "/" + newGenre + "/" + newStatus;
+
+            if(list.contains(oldItem)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 TextView message = new TextView(this);
                 message.setText("Could not update item.\nItem already exists.");
@@ -168,61 +167,69 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
             else {
-                int position = list.indexOf(formattedItem);
+                //storage.editJSON(oldItem, newItem);
+
+                int position = list.indexOf(oldItem);
                 list.set(position, newName + "/" + newGenre + "/" + newStatus + "/" + favorite);
                 refreshItems();
             }
         }
     }
 
-    public boolean deleteItem(String genre, String name, String status) {
-        String formattedItem = name + "/" + genre + "/" + status;
+    public boolean deleteItem(String genre, String name, String status, String favorite) {
+        String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
+        if(favorite.equals("true"))
+            favoriteCount--;
         list.remove(formattedItem);
         sortedList.remove(formattedItem);
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
-        insertIndex--;
         return true;
     }
-    public void favoriteItem(String genre, String name, String status, String favorite){
-        String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
-        int insertPosition = 0;
-        for(String s : sortedList){
-            String[] splitItem = s.split("/");
-            if(!(splitItem[3].equals(favorite))){
-                break;
-            }
-            insertPosition++;
-        }
-        sortedList.remove(formattedItem);
-        list.remove(formattedItem);
-        sortedList.add(insertPosition, formattedItem);
+
+    public void favoriteItem(String genre, String name, String status, String oldFavorite) {
+        boolean newFavorite = !(Boolean.parseBoolean(oldFavorite));
+
+        String newItem = name + "/" + genre + "/" + status + "/" + String.valueOf(newFavorite);
+        String oldItem = name + "/" + genre + "/" + status + "/" + oldFavorite;
+
+        sortedList.add(favoriteCount, newItem);
+        sortedList.remove(oldItem);
+
+        favoriteCount++;
+
+        list.set(list.indexOf(oldItem), newItem);
+
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
     }
-    public void unfavoriteItem(String genre, String name, String status, String favorite){
-        String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
-        int insertPosition = 0;
-        for(String s : sortedList){
-            String[] splitItem = s.split("/");
-            if(!(splitItem[3].equals(favorite))){
-                break;
-            }
-            insertPosition++;
-        }
-        sortedList.remove(formattedItem);
-        list.remove(formattedItem);
-        sortedList.add(list.indexOf(formattedItem),formattedItem);
+
+    public void unfavoriteItem(String genre, String name, String status, String oldFavorite) {
+        boolean newFavorite = !(Boolean.parseBoolean(oldFavorite));
+
+        String newItem = name + "/" + genre + "/" + status + "/" + String.valueOf(newFavorite);
+        String oldItem = name + "/" + genre + "/" + status + "/" + oldFavorite;
+
+        sortedList.add(list.indexOf(oldItem)+favoriteCount, newItem);
+        sortedList.remove(oldItem);
+
+        favoriteCount--;
+
+        list.set(list.indexOf(oldItem), newItem);
+
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
     }
+
     private void refreshItems() {
-        Collections.copy(sortedList, list);
+        //Collections.copy(sortedList, list);
+
         adapter.setItem(sortedList);
         nameSortState = UNSORTED;
         genreSortState = UNSORTED;
         statusSortState = UNSORTED;
         refreshTitles();
+        storage.toJSON(list);
         adapter.notifyDataSetChanged();
     }
 
@@ -280,17 +287,48 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MainActivity", "onClickNameTitle: nameTitle");
         if (nameSortState == UNSORTED) {
-            Collections.sort(sortedList);
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+
+            Collections.sort(favoriteArray);
+            Collections.sort(nonFavoriteArray);
+
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
+
+            //Collections.sort(sortedList);
             nameSortState = SORTED_ASCENDING;
             Log.d("MainActivity", "onClickNameTitle: sorted ascending");
         }
         else if (nameSortState == SORTED_ASCENDING) {
-            Collections.sort(sortedList, Collections.reverseOrder());
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+
+            Collections.sort(favoriteArray, Collections.reverseOrder());
+            Collections.sort(nonFavoriteArray, Collections.reverseOrder());
+
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
+
             nameSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickNameTitle: sorted descending");
         }
         else if(nameSortState == SORTED_DESCENDING) {
-            Collections.copy(sortedList, list);
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
+
             //sortedList = list;
             nameSortState = UNSORTED;
             Log.d("MainActivity", "onClickNameTitle: unsorted");
@@ -312,7 +350,11 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MainActivity", "onClickGenreTitle: nameTitle");
         if (genreSortState == UNSORTED) {
-            Collections.sort(sortedList, new Comparator<String>() {
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+            Collections.sort(favoriteArray, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -320,11 +362,26 @@ public class MainActivity extends AppCompatActivity {
                     return split1[1].compareTo(split2[1]);
                 }
             });
+            Collections.sort(nonFavoriteArray, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    String[] split1 = o1.split("/");
+                    String[] split2 = o2.split("/");
+                    return split1[1].compareTo(split2[1]);
+                }
+            });
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
             genreSortState = SORTED_ASCENDING;
             Log.d("MainActivity", "onClickGenreTitle: sorted ascending");
         }
         else if (genreSortState == SORTED_ASCENDING) {
-            Collections.sort(sortedList, new Comparator<String>() {
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+            Collections.sort(favoriteArray, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -332,11 +389,30 @@ public class MainActivity extends AppCompatActivity {
                     return split2[1].compareTo(split1[1]);
                 }
             });
+            Collections.sort(nonFavoriteArray, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    String[] split1 = o1.split("/");
+                    String[] split2 = o2.split("/");
+                    return split2[1].compareTo(split1[1]);
+                }
+            });
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
             genreSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickGenreTitle: sorted descending");
         }
         else if(genreSortState == SORTED_DESCENDING) {
-            Collections.copy(sortedList, list);
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
+
             //sortedList = list;
             genreSortState = UNSORTED;
             Log.d("MainActivity", "onClickGenreTitle: unsorted");
@@ -357,7 +433,11 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MainActivity", "onClickStatusTitle: nameTitle");
         if (statusSortState == UNSORTED) {
-            Collections.sort(sortedList, new Comparator<String>() {
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+            Collections.sort(favoriteArray, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -365,11 +445,26 @@ public class MainActivity extends AppCompatActivity {
                     return split1[2].compareTo(split2[2]);
                 }
             });
+            Collections.sort(nonFavoriteArray, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    String[] split1 = o1.split("/");
+                    String[] split2 = o2.split("/");
+                    return split1[2].compareTo(split2[2]);
+                }
+            });
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
             statusSortState = SORTED_ASCENDING;
             Log.d("MainActivity", "onClickStatusTitle: sorted ascending");
         }
         else if (statusSortState == SORTED_ASCENDING) {
-            Collections.sort(sortedList, new Comparator<String>() {
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+            Collections.sort(favoriteArray, new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     String[] split1 = o1.split("/");
@@ -377,11 +472,30 @@ public class MainActivity extends AppCompatActivity {
                     return split2[2].compareTo(split1[2]);
                 }
             });
+            Collections.sort(nonFavoriteArray, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    String[] split1 = o1.split("/");
+                    String[] split2 = o2.split("/");
+                    return split2[2].compareTo(split1[2]);
+                }
+            });
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
             statusSortState = SORTED_DESCENDING;
             Log.d("MainActivity", "onClickStatusTitle: sorted descending");
         }
         else if(statusSortState == SORTED_DESCENDING) {
-            Collections.copy(sortedList, list);
+            ArrayList<String> favoriteArray = new ArrayList<String>();
+            for(int i = 0; i < favoriteCount; i++) { favoriteArray.add(sortedList.get(i)); }
+            ArrayList<String> nonFavoriteArray = new ArrayList<String>();
+            for(int i = favoriteCount; i < sortedList.size(); i++) { nonFavoriteArray.add(sortedList.get(i)); }
+
+            ArrayList<String> favoriteBefore = new ArrayList<String>(favoriteArray);
+            favoriteBefore.addAll(nonFavoriteArray);
+            Collections.copy(sortedList, favoriteBefore);
+
             //sortedList = list;
             statusSortState = UNSORTED;
             Log.d("MainActivity", "onClickStatusTitle: unsorted");
@@ -396,31 +510,4 @@ public class MainActivity extends AppCompatActivity {
         refreshTitles();
         Log.d("MainActivity", "onClickStatusTitle: titles refreshed");
     }
-
-private void checkFavorite(String s, int position) {
-    // Check if the item is already marked as favorite, if not, mark it as such
-    Boolean fav = favoriteStatus.get(s);
-    if (fav == null) {
-        fav = false;  // Default value if the item is not found in the map
-    }
-    fav = !fav;  // Toggle the favorite status
-    favoriteStatus.put(s, fav); // Update the status in the map
-
-    // Reorder the list if favorited
-    if (fav) {
-        // If item is now a favorite, move it to the top
-        list.remove(position);
-        list.add(0, s);
-        adapter.notifyItemMoved(position, 0);
-    } else {
-        //  moves it to the end
-        list.remove(position);
-        list.add(s);
-        adapter.notifyItemMoved(position, list.size() - 1);
-    }
-
-    // This ensures the entire list is correctly updated in the display
-    adapter.notifyItemRangeChanged(0, list.size());
-}
-
 }

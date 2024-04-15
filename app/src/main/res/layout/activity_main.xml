@@ -116,7 +116,7 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvMedia"
+                android:id="@+id/mediaList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textSize="20sp" />
