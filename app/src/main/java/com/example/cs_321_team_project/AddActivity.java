@@ -64,6 +64,7 @@ public class AddActivity extends AppCompatActivity {
                     resultIntent.putExtra("genre", genreSelection);
                     resultIntent.putExtra("status", statusSelection);
                     resultIntent.putExtra("name", mediaName);
+                    resultIntent.putExtra("favorite", "false");
                     setResult(2, resultIntent);
                     finish();
                 }

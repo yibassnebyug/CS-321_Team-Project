@@ -2,19 +2,16 @@ package com.example.cs_321_team_project;
 
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -68,14 +65,36 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         TextView displayName;
         TextView displayGenre;
         TextView displayStatus;
+        ImageButton favoriteButton;
 
         ViewHolder(View itemView) {
             super(itemView);
             displayName = itemView.findViewById(R.id.displayName);
             displayGenre = itemView.findViewById(R.id.displayGenre);
             displayStatus = itemView.findViewById(R.id.displayStatus);
+            favoriteButton = itemView.findViewById(R.id.favoriteItem);
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
+            favoriteButton.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view){
+                    String favorite = String.valueOf(favoriteButton.getTag());
+
+                    if(favorite.equals("false")){
+                        favoriteButton.setImageResource(R.drawable.filled_star);
+                        favoriteButton.setTag("true");
+                        ((MainActivity)mContext).favoriteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString(), favoriteButton.getTag().toString());
+
+                    }
+                    else if(favorite.equals("true")){
+                        favoriteButton.setImageResource(R.drawable.unfilled_star);
+                        favoriteButton.setTag("false");
+                        ((MainActivity)mContext).unfavoriteItem(displayGenre.getText().toString(), displayName.getText().toString(), displayStatus.getText().toString(), favoriteButton.getTag().toString());
+                    }
+
+                }
+            });
+
             /*itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -92,6 +111,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             bundle.putString("genre", displayGenre.getText().toString());
             bundle.putString("status", displayStatus.getText().toString());
             bundle.putString("name", displayName.getText().toString());
+            bundle.putString("favorite", favoriteButton.getTag().toString());
             editIntent.putExtras(bundle);
             ((Activity) mContext).startActivityForResult(editIntent, 3);
         }

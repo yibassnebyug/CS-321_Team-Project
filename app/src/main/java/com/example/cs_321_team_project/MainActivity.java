@@ -24,6 +24,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 // debugging
 import android.util.Log;
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     static int insertIndex = 0;
     static AlertDialog alert;
     static boolean freshStart = true;
-
+    private Map<String, Boolean> favoriteStatus = new HashMap<>();
     final int UNSORTED = 0;
     final int SORTED_ASCENDING = 1;
     final int SORTED_DESCENDING = 2;
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -119,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
             String genre = data.getStringExtra("genre");
             String status = data.getStringExtra("status");
             String name = data.getStringExtra("name");
-
-            String formattedItem = name + "/" + genre + "/" + status;
+            String favorite = data.getStringExtra("favorite");
+            String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
 
             if(list.contains(formattedItem)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -150,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
             String oldGenre = data.getStringExtra("oldGenre");
             String oldStatus = data.getStringExtra("oldStatus");
             String oldName = data.getStringExtra("oldName");
-
-            String formattedItem = oldName + "/" + oldGenre + "/" + oldStatus;
+            String favorite = data.getStringExtra("favorite");
+            String formattedItem = oldName + "/" + oldGenre + "/" + oldStatus +"/" + favorite;
 
             if(list.contains(formattedItem)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -165,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 int position = list.indexOf(formattedItem);
-                list.set(position, newName + "/" + newGenre + "/" + newStatus);
+                list.set(position, newName + "/" + newGenre + "/" + newStatus + "/" + favorite);
                 refreshItems();
             }
         }
@@ -180,7 +184,38 @@ public class MainActivity extends AppCompatActivity {
         insertIndex--;
         return true;
     }
-
+    public void favoriteItem(String genre, String name, String status, String favorite){
+        String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
+        int insertPosition = 0;
+        for(String s : sortedList){
+            String[] splitItem = s.split("/");
+            if(!(splitItem[3].equals(favorite))){
+                break;
+            }
+            insertPosition++;
+        }
+        sortedList.remove(formattedItem);
+        list.remove(formattedItem);
+        sortedList.add(insertPosition, formattedItem);
+        adapter.setItem(sortedList);
+        adapter.notifyDataSetChanged();
+    }
+    public void unfavoriteItem(String genre, String name, String status, String favorite){
+        String formattedItem = name + "/" + genre + "/" + status + "/" + favorite;
+        int insertPosition = 0;
+        for(String s : sortedList){
+            String[] splitItem = s.split("/");
+            if(!(splitItem[3].equals(favorite))){
+                break;
+            }
+            insertPosition++;
+        }
+        sortedList.remove(formattedItem);
+        list.remove(formattedItem);
+        sortedList.add(list.indexOf(formattedItem),formattedItem);
+        adapter.setItem(sortedList);
+        adapter.notifyDataSetChanged();
+    }
     private void refreshItems() {
         Collections.copy(sortedList, list);
         adapter.setItem(sortedList);
@@ -361,4 +396,31 @@ public class MainActivity extends AppCompatActivity {
         refreshTitles();
         Log.d("MainActivity", "onClickStatusTitle: titles refreshed");
     }
+
+private void checkFavorite(String s, int position) {
+    // Check if the item is already marked as favorite, if not, mark it as such
+    Boolean fav = favoriteStatus.get(s);
+    if (fav == null) {
+        fav = false;  // Default value if the item is not found in the map
+    }
+    fav = !fav;  // Toggle the favorite status
+    favoriteStatus.put(s, fav); // Update the status in the map
+
+    // Reorder the list if favorited
+    if (fav) {
+        // If item is now a favorite, move it to the top
+        list.remove(position);
+        list.add(0, s);
+        adapter.notifyItemMoved(position, 0);
+    } else {
+        //  moves it to the end
+        list.remove(position);
+        list.add(s);
+        adapter.notifyItemMoved(position, list.size() - 1);
+    }
+
+    // This ensures the entire list is correctly updated in the display
+    adapter.notifyItemRangeChanged(0, list.size());
+}
+
 }

@@ -56,7 +56,7 @@ public class EditActivity extends AppCompatActivity {
         String genre = data.getStringExtra("genre");
         String status = data.getStringExtra("status");
         String name = data.getStringExtra("name");
-
+        String favorite = data.getStringExtra("favorite");
         genreSpinner.setSelection(getSpinnerPosition(genreSpinner, genre));
         statusSpinner.setSelection(getSpinnerPosition(statusSpinner, status));
         textBox.setText(name);
@@ -79,6 +79,7 @@ public class EditActivity extends AppCompatActivity {
                     resultIntent.putExtra("oldGenre", genre);
                     resultIntent.putExtra("oldStatus", status);
                     resultIntent.putExtra("oldName", name);
+                    resultIntent.putExtra("favorite", favorite);
                     setResult(3, resultIntent);
                     finish();
                 }
