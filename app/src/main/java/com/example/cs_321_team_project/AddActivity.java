@@ -73,7 +73,7 @@ public class AddActivity extends AppCompatActivity {
                         EditText newGenreText = new EditText(AddActivity.this);
 
                         newGenreAlert.setView(newGenreText);
-                        newGenreAlert.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                        newGenreAlert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 String newGenre = newGenreText.getText().toString();
                                 if(!(newGenre.isEmpty())) {

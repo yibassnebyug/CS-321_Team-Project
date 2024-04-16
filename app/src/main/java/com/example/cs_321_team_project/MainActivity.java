@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             TextView message = new TextView(this);
-            message.setText("Welcome to MyCollection!\nManage your favorite topics!\nTap the ? for help.");
+            message.setText("Welcome to MyCollection!\n\nManage your favorite topics!\n\nTap the ? for help.");
             message.setGravity(Gravity.CENTER_HORIZONTAL);
             message.setTextSize(18);
             builder.setView(message);
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.help) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             TextView message = new TextView(this);
-            message.setText("Tap the plus button to add a new item.\n\n Tap the column labels to sort your items.\n\nTap an item to edit information.\n\nLong press on an item to delete it.\n\nTap the star to pin an item to the top.");
+            message.setText("\nTap the plus button to add a new item.\n\n Tap the column labels to sort your items.\n\nTap an item to edit information.\n\nLong press on an item to delete it.\n\nTap the star to pin an item to the top.\n");
             message.setGravity(Gravity.CENTER_HORIZONTAL);
             message.setTextSize(18);
             builder.setView(message);
