@@ -101,6 +101,13 @@
                 android:textSize="19sp"
                 android:textStyle="bold" />
 
+
+
+            <View
+                android:layout_width="29dp"
+                android:layout_weight="0.01"
+                android:layout_height="match_parent" />
+
         </LinearLayout>
 
         <View
