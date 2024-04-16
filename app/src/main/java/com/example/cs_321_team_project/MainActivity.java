@@ -2,9 +2,12 @@ package com.example.cs_321_team_project;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.widget.EditText;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.content.DialogInterface;
+import java.util.List;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
@@ -20,7 +23,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.example.cs_321_team_project.MediaSearch;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     MediaList storage = new MediaList(this);
     static ArrayList<String> list = new ArrayList<String>();
     static ArrayList<String> sortedList = new ArrayList<String>();
+    static ArrayList<String>searchList=new ArrayList<String>();
     RecyclerViewAdapter adapter;
     static RecyclerView recyclerView;
     static int favoriteCount = 0;
@@ -111,9 +115,33 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (item.getItemId() == R.id.search)
         {
-            // add search function here
+            showSearch();
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void showSearch(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Search");
+
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+        builder.setPositiveButton("Search", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                String searchText = input.getText().toString();
+                List<String> filteredList = MediaSearch.search(list, searchText);
+                updateRecyclerView(filteredList);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void updateRecyclerView(List<String>newList){
+        adapter.setItem(newList);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
