@@ -28,14 +28,17 @@ public class InstrumentedTests {
      */
     @Before
     public void useAppContext() {
-        // Context of the app under test.
+        // gets the instrumentation before each test
+        // not clear if @Before is better that @BeforeClass for this test set up
         appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
     @Test public void test_AppContext() {
+        // if we can get the package name, then the context has been initialized
         assertEquals("com.example.cs_321_team_project", appContext.getPackageName());
     }
     @Test
     public void test_launch() {
+        // if is root then launch was successful
         onView(isRoot());
     }
 
