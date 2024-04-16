@@ -16,9 +16,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class EditActivity extends AppCompatActivity {
 
-    @Override
+    static ArrayList<String> genreChoices = new ArrayList<String>(Arrays.asList("Movie", "Book", "Video Game", "TV Show", "Music"));
+    static ArrayList<String> statusChoices = new ArrayList<String>(Arrays.asList("Ongoing", "Finished", "On-Hold", "Dropped", "For Later"));
+
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
@@ -29,13 +35,16 @@ public class EditActivity extends AppCompatActivity {
             return insets;
         });
 
+        //genreChoices.addAll(5, AddActivity.genreChoices);
+        for(int i = 6; i < AddActivity.genreChoices.size()-1; i++) {
+            genreChoices.add(AddActivity.genreChoices.get(i));
+        }
+        //genreChoices.remove(genreChoices.size()-1);
+
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Please check parameters...");
         builder1.setCancelable(true);
         AlertDialog alert1 = builder1.create();
-
-        String[] genreChoices = new String[] { "Movie", "Book", "Video Game", "TV Show", "Music" };
-        String[] statusChoices = new String[] { "Ongoing", "Finished", "On-Hold", "Dropped", "For Later"};
 
         Spinner genreSpinner = (Spinner) findViewById(R.id.editGenreSpinner);
         Spinner statusSpinner = (Spinner) findViewById(R.id.editStatusSpinner);

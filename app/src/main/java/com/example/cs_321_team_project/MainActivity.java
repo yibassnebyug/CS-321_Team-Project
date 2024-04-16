@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerViewAdapter(this, sortedList);
         recyclerView.setAdapter(adapter);
 
+        //storedItems();
+
         if(freshStart) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.help) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             TextView message = new TextView(this);
-            message.setText("Tap the plus button to add a new topic.\n\n Tap the column labels to sort your items.\n\nTap an item to edit its information.\n\nLong press on an item to delete it.");
+            message.setText("Tap the plus button to add a new item.\n\n Tap the column labels to sort your items.\n\nTap an item to edit information.\n\nLong press on an item to delete it.\n\nTap the star to pin an item to the top.");
             message.setGravity(Gravity.CENTER_HORIZONTAL);
             message.setTextSize(18);
             builder.setView(message);
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 storage.toJSON(list);
 
                 list.add(formattedItem);
-                sortedList.add(formattedItem); // used to make sortedList and list have same number of indexes
+                sortedList.add(formattedItem);
 
                 refreshItems();
             }
@@ -153,10 +155,10 @@ public class MainActivity extends AppCompatActivity {
 
             String favorite = data.getStringExtra("favorite");
 
-            String oldItem = oldName + "/" + oldGenre + "/" + oldStatus;
-            String newItem = newName + "/" + newGenre + "/" + newStatus;
+            String oldItem = oldName + "/" + oldGenre + "/" + oldStatus + "/" + favorite;
+            String newItem = newName + "/" + newGenre + "/" + newStatus + "/" + favorite;
 
-            if(list.contains(oldItem)) {
+            if(list.contains(newItem)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 TextView message = new TextView(this);
                 message.setText("Could not update item.\nItem already exists.");
@@ -167,10 +169,8 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
             else {
-                //storage.editJSON(oldItem, newItem);
-
-                int position = list.indexOf(oldItem);
-                list.set(position, newName + "/" + newGenre + "/" + newStatus + "/" + favorite);
+                list.set(list.indexOf(oldItem), newItem);
+                sortedList.set(sortedList.indexOf(oldItem), newItem);
                 refreshItems();
             }
         }
@@ -221,9 +221,14 @@ public class MainActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    private void refreshItems() {
-        //Collections.copy(sortedList, list);
+    public void storedItems() {
+        ArrayList<String> storedArray = storage.fromJSON();
+        list = (ArrayList<String>) storedArray.clone();
+        sortedList = (ArrayList<String>) storedArray.clone();
+        refreshItems();
+    }
 
+    private void refreshItems() {
         adapter.setItem(sortedList);
         nameSortState = UNSORTED;
         genreSortState = UNSORTED;

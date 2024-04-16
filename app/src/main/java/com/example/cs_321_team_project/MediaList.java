@@ -70,26 +70,31 @@ public class MediaList {
 
     public void toFile() {
         try{
-            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File file = new File(path + "/storage.json");
-            ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(file));
-            output.writeObject(jsonObject);
-            output.close();
+
         } catch (Exception e) {
-            // something
+            throw new RuntimeException(e);
         }
     }
 
     public void fromFile() {
+        String json = null;
         try {
-            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File file = new File(path + "/storage.json");
-            ObjectInputStream input = new ObjectInputStream(new FileInputStream(file));
-            jsonObject = (JSONObject) input.readObject();
+            InputStream input = context.getAssets().open("storage.json");
+            int size = input.available();
+            byte[] buffer = new byte[size];
+            input.read(buffer);
             input.close();
+            json = new String(buffer, "UTF-8");
+            jsonObject = new JSONObject(json);
         } catch (Exception e) {
-
+            throw new RuntimeException(e);
         }
+    }
+
+    public boolean checkFile(String fileName) {
+        String path = context.getFilesDir().getAbsolutePath() + "/" + fileName;
+        File file = new File(path);
+        return file.exists();
     }
 
     public void clear() {
