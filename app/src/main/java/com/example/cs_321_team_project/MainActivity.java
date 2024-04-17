@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.content.DialogInterface;
 import java.util.List;
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -33,9 +35,12 @@ import java.util.Comparator;
 // debugging
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity {
 
-    MediaList storage = new MediaList(this);
+    MediaList storage;
     static ArrayList<String> list = new ArrayList<String>();
     static ArrayList<String> sortedList = new ArrayList<String>();
     static ArrayList<String>searchList=new ArrayList<String>();
@@ -61,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        storage = new MediaList(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_mainActivity);
         setSupportActionBar(toolbar);
 
@@ -69,7 +76,9 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerViewAdapter(this, sortedList);
         recyclerView.setAdapter(adapter);
 
-        //storedItems();
+        if(storage.isFilePresent()) {
+            fromStorage(storage.fromJSON());
+        }
 
         if(freshStart) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -113,13 +122,24 @@ public class MainActivity extends AppCompatActivity {
             alert = builder.create();
             alert.show();
         }
-        else if (item.getItemId() == R.id.search)
-        {
+        else if (item.getItemId() == R.id.search) {
+            /*SearchView searchView = findViewById(R.id.search);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+            });*/
             showSearch();
         }
         return super.onOptionsItemSelected(item);
     }
-    private void showSearch(){
+
+    private void showSearch() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Search");
 
@@ -138,8 +158,9 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+
     }
-    private void updateRecyclerView(List<String>newList){
+    private void updateRecyclerView(List<String> newList) {
         adapter.setItem(newList);
         adapter.notifyDataSetChanged();
     }
@@ -165,10 +186,10 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
             else {
-                storage.toJSON(list);
-
                 list.add(formattedItem);
                 sortedList.add(formattedItem);
+
+                storage.toJSON(sortedList);
 
                 refreshItems();
             }
@@ -199,6 +220,9 @@ public class MainActivity extends AppCompatActivity {
             else {
                 list.set(list.indexOf(oldItem), newItem);
                 sortedList.set(sortedList.indexOf(oldItem), newItem);
+
+                storage.toJSON(sortedList);
+
                 refreshItems();
             }
         }
@@ -210,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             favoriteCount--;
         list.remove(formattedItem);
         sortedList.remove(formattedItem);
+        storage.toJSON(sortedList);
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
         return true;
@@ -228,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
 
         list.set(list.indexOf(oldItem), newItem);
 
+        storage.toJSON(sortedList);
+
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
     }
@@ -245,15 +272,25 @@ public class MainActivity extends AppCompatActivity {
 
         list.set(list.indexOf(oldItem), newItem);
 
+        storage.toJSON(sortedList);
+
         adapter.setItem(sortedList);
         adapter.notifyDataSetChanged();
     }
 
-    public void storedItems() {
-        ArrayList<String> storedArray = storage.fromJSON();
-        list = (ArrayList<String>) storedArray.clone();
-        sortedList = (ArrayList<String>) storedArray.clone();
-        refreshItems();
+    public void fromStorage(ArrayList<String> fromStorage) {
+        if(!(fromStorage.isEmpty())) {
+            list = new ArrayList<String>(fromStorage);
+            sortedList = new ArrayList<String>(fromStorage);
+            refreshItems();
+
+            for(String s : sortedList) {
+                String[] splitString = s.split("/");
+                if(splitString[3].equals("false"))
+                    break;
+                favoriteCount++;
+            }
+        }
     }
 
     private void refreshItems() {
@@ -262,7 +299,6 @@ public class MainActivity extends AppCompatActivity {
         genreSortState = UNSORTED;
         statusSortState = UNSORTED;
         refreshTitles();
-        storage.toJSON(list);
         adapter.notifyDataSetChanged();
     }
 

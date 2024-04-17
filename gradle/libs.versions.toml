@@ -8,6 +8,8 @@ appcompat = "1.7.0-alpha03"
 material = "1.10.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
+gson = "2.10.1"
+jacksonCore = "2.17.0"
 
 [libraries]
 appcompat-v7 = { module = "com.android.support:appcompat-v7", version.ref = "appcompatV7" }
@@ -18,6 +20,8 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jacksonCore" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

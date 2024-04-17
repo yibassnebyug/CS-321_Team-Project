@@ -101,9 +101,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             displayGenre = itemView.findViewById(R.id.displayGenre);
             displayStatus = itemView.findViewById(R.id.displayStatus);
             favoriteButton = itemView.findViewById(R.id.favoriteItem);
+            if(favoriteButton.getTag().equals("true"))
+                favoriteButton.setImageResource(R.drawable.filled_star);
+            else if(favoriteButton.getTag().equals("false"))
+                favoriteButton.setImageResource(R.drawable.unfilled_star);
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
-            //favoriteButton.setImageResource(R.drawable.unfilled_star);
         }
 
         @Override
