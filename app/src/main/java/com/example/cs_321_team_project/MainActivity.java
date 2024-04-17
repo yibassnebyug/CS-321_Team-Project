@@ -14,7 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
+import android.widget.SearchView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     MediaList storage = new MediaList(this);
     static ArrayList<String> list = new ArrayList<String>();
     static ArrayList<String> sortedList = new ArrayList<String>();
-    static ArrayList<String>searchList=new ArrayList<String>();
+    static ArrayList<String> searchList = new ArrayList<String>();
     RecyclerViewAdapter adapter;
     static RecyclerView recyclerView;
     static int favoriteCount = 0;
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         //storedItems();
 
-        if(freshStart) {
+        if (freshStart) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             TextView message = new TextView(this);
@@ -96,12 +96,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.help) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -112,14 +106,44 @@ public class MainActivity extends AppCompatActivity {
             builder.setView(message);
             alert = builder.create();
             alert.show();
-        }
-        else if (item.getItemId() == R.id.search)
-        {
-            showSearch();
+        } else if (item.getItemId() == R.id.search) {
+
+            //
+
         }
         return super.onOptionsItemSelected(item);
     }
-    private void showSearch(){
+
+
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main,menu);
+        MenuItem menuItem=menu.findItem(R.id.search);
+        SearchView searchView= (SearchView)menuItem.getActionView();
+        searchView.setQueryHint("Type here");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                List<String>filter=MediaSearch.search(sortedList,newText);
+                updateRecyclerView(filter);
+
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+    private void updateRecyclerView(List<String>list){
+        adapter.setItem(list);
+        adapter.notifyDataSetChanged();
+    }
+
+    /*private void showSearch(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Search");
 
@@ -142,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateRecyclerView(List<String>newList){
         adapter.setItem(newList);
         adapter.notifyDataSetChanged();
-    }
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
