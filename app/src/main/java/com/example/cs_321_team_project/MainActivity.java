@@ -2,14 +2,7 @@ package com.example.cs_321_team_project;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.widget.EditText;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.content.DialogInterface;
-import java.util.List;
 import android.os.Bundle;
-import android.util.JsonReader;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,7 +18,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.cs_321_team_project.MediaSearch;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -35,9 +27,6 @@ import java.util.Comparator;
 // debugging
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class MainActivity extends AppCompatActivity {
 
     MediaList storage;
@@ -45,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
     static ArrayList<String> sortedList = new ArrayList<String>();
     static ArrayList<String>searchList=new ArrayList<String>();
     RecyclerViewAdapter adapter;
-    static RecyclerView recyclerView;
     static int favoriteCount = 0;
     static AlertDialog alert;
-    static boolean freshStart = true;
 
     final int UNSORTED = 0;
     final int SORTED_ASCENDING = 1;
@@ -80,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
             fromStorage(storage.fromJSON());
         }
 
-        if(freshStart) {
+        // welcome pop-up
+        /*if(storage.firstTime()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             TextView message = new TextView(this);
@@ -91,8 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
             alert = builder.create();
             alert.show();
-            freshStart = !freshStart;
-        }
+        }*/
 
         FloatingActionButton button = findViewById(R.id.floatingActionButton3);
         button.setOnClickListener(new View.OnClickListener() {
@@ -103,86 +90,63 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.main,menu);
-        MenuItem menuItem=menu.findItem(R.id.search);
-        SearchView searchView= (SearchView)menuItem.getActionView();
-        searchView.setQueryHint("Type here");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
 
-                return false;
-            }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        if (searchView != null) {
+            searchView.setOnSearchClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                        @Override
+                        public boolean onQueryTextSubmit(String query) {
+                            searchList.clear();
+                            String text = (String) searchView.getQuery().toString();
+                            for(String s : sortedList) {
+                                String[] splitString = s.split("/");
+                                if(splitString[0].contains(text)) {
+                                    searchList.add(s);
+                                }
+                            }
+                            adapter.setItem(searchList);
+                            adapter.notifyDataSetChanged();
+                            return false;
+                        }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                List<String>filter=MediaSearch.search(sortedList,newText);
-                updateRecyclerView(filter);
-
-                return false;
-            }
-        });
-
-        return super.onCreateOptionsMenu(menu);
+                        @Override
+                        public boolean onQueryTextChange(String newText) {
+                            return false;
+                        }
+                    });
+                }
+            });
+            searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+                @Override
+                public boolean onClose() {
+                    adapter.setItem(sortedList);
+                    adapter.notifyDataSetChanged();
+                    return false;
+                }
+            });
+        }
+        return true;
     }
-
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.help) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             TextView message = new TextView(this);
-            message.setText("\nTap the plus button to add a new item.\n\n Tap the column labels to sort your items.\n\nTap an item to edit information.\n\nLong press on an item to delete it.\n\nTap the star to pin an item to the top.\n");
+            message.setText("\nTap the plus button to add a new item.\n\n Tap the labels to sort your items.\n\nTap an item to edit.\n\nLong press on an item to delete.\n\nTap the star to pin an item.\n\nTap the magnifying glass to search for items.\n");
             message.setGravity(Gravity.CENTER_HORIZONTAL);
             message.setTextSize(18);
             builder.setView(message);
             alert = builder.create();
             alert.show();
         }
-        else if (item.getItemId() == R.id.search) {
-            /*SearchView searchView = findViewById(R.id.search);
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    return false;
-                }
-            });*/
-            showSearch();
-        }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showSearch() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Search");
-
-        final EditText input = new EditText(this);
-        builder.setView(input);
-
-        builder.setPositiveButton("Search", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int which) {
-                String searchText = input.getText().toString();
-                List<String> filteredList = MediaSearch.search(list, searchText);
-                updateRecyclerView(filteredList);
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-    }
-    private void updateRecyclerView(List<String> newList) {
-        adapter.setItem(newList);
-        adapter.notifyDataSetChanged();
     }
 
     @Override
