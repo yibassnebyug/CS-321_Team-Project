@@ -249,10 +249,12 @@ public class MainActivity extends AppCompatActivity {
         String newItem = name + "/" + genre + "/" + status + "/" + String.valueOf(newFavorite);
         String oldItem = name + "/" + genre + "/" + status + "/" + oldFavorite;
 
+        favoriteCount--;
+
         sortedList.add(list.indexOf(oldItem)+favoriteCount, newItem);
         sortedList.remove(oldItem);
 
-        favoriteCount--;
+
 
         list.set(list.indexOf(oldItem), newItem);
 
