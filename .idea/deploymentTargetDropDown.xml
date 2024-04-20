@@ -2,8 +2,33 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="app">
+      <entry key="AddItemTest">
         <State />
+      </entry>
+      <entry key="FavoriteItemTest">
+        <State />
+      </entry>
+      <entry key="ItemSortTest">
+        <State />
+      </entry>
+      <entry key="MainExistsTest">
+        <State />
+      </entry>
+      <entry key="app">
+        <State>
+          <runningDeviceTargetSelectedWithDropDown>
+            <Target>
+              <type value="RUNNING_DEVICE_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="SERIAL_NUMBER" />
+                  <value value="G8S1KT06152401T5" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-04-16T16:07:25.698382Z" />
+        </State>
       </entry>
     </value>
   </component>
